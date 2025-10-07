@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import UserHeader from "../components/UserHeader";
 import UserFooter from "../components/UserFooter";
 import { createClient } from "@supabase/supabase-js";
-import "../../assests/user-style.css";
+import "../assets/user-style.css";
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,

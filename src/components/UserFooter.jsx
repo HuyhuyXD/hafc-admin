@@ -1,5 +1,5 @@
 import React from "react";
-import "../../assests/user-style.css";
+import "../assets/user-style.css";
 
 const UserFooter = () => {
   return (

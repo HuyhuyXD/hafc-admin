@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import "../../assests/user-style.css";
+import "../assets/user-style.css";
 
 const UserHeader = ({ userEmail, onLogout }) => {
   const navigate = useNavigate();

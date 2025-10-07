@@ -2,8 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import UserHeader from "../components/UserHeader";
 import UserFooter from "../components/UserFooter";
-import "../assets/user-style.css";
-
+import "../assets/user-style.css"; // ✅ Đúng đường dẫn (không dư ../)
 
 const UserDashboard = () => {
   const navigate = useNavigate();
@@ -21,12 +20,9 @@ const UserDashboard = () => {
         <h2>Chào mừng {userEmail}</h2>
         <p>Chọn hành động bên dưới để tiếp tục:</p>
         <div className="user-actions">
-          <button
-            className="user-btn"
-            onClick={() => navigate("/submit-recruitment")}
-          >
-            Đăng bài tuyển dụng
-          </button>
+          {/* ví dụ 2 nút chức năng */}
+          <button onClick={() => navigate("/user/submit")}>Gửi bài tuyển dụng</button>
+          <button onClick={handleLogout}>Đăng xuất</button>
         </div>
       </main>
       <UserFooter />

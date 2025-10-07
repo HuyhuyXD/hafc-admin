@@ -1,63 +1,37 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext();
-export const useAuth = () => useContext(AuthContext);
-
-// ✅ Khởi tạo Supabase client có lưu session
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
-  {
-    auth: {
-      persistSession: true,
-      storage: localStorage,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-    },
-  }
-);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // 🔥 Thêm state loading
+  const [loading, setLoading] = useState(true); // ✅ Thêm state loading để tránh lỗi reload trắng
 
+  // Khi app load lần đầu
   useEffect(() => {
-    const initAuth = async () => {
-      // Kiểm tra session có sẵn trong localStorage
-      const { data } = await supabase.auth.getSession();
-      if (data?.session) {
-        setUser(data.session.user);
-      }
-      setLoading(false); // ✅ Chỉ render app sau khi check xong
-    };
-
-    initAuth();
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-      setLoading(false);
-    });
-
-    return () => listener.subscription.unsubscribe();
+    const storedUser = localStorage.getItem("userEmail");
+    if (storedUser) {
+      setUser(storedUser);
+    }
+    setLoading(false); // Đọc xong user => kết thúc loading
   }, []);
 
-  const login = async (email, password) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+  // Hàm login
+  const login = (email) => {
+    localStorage.setItem("userEmail", email);
+    setUser(email);
   };
 
-  const logout = async () => {
-    await supabase.auth.signOut();
+  // Hàm logout
+  const logout = () => {
+    localStorage.removeItem("userEmail");
     setUser(null);
   };
 
-  // 🔥 Trong lúc đang kiểm tra session thì hiển thị tạm màn chờ
-  if (loading) return <div style={{ textAlign: "center", marginTop: "20vh" }}>Đang tải...</div>;
-
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
 };
+
+export const useAuth = () => useContext(AuthContext);

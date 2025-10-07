@@ -4,15 +4,25 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ManageRecruitment from "./pages/ManageRecruitment";
 import EditRecruitment from "./pages/EditRecruitment";
-import ManageUsers from "./pages/ManageUsers"; // ✅ thêm import
+import ManageUsers from "./pages/ManageUsers";
 import { useAuth } from "./context/AuthContext";
 import AdminLayout from "./layouts/AdminLayout";
 import UserDashboard from "./pages/UserDashboard";
 import SubmitRecruitment from "./pages/SubmitRecruitment";
 
-
 const PrivateRoute = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  // ✅ Nếu đang khởi tạo context => hiển thị "Đang tải..."
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center", paddingTop: "100px", fontSize: "18px" }}>
+        Đang tải...
+      </div>
+    );
+  }
+
+  // ✅ Nếu có user => cho phép truy cập, ngược lại => về login
   return user ? children : <Navigate to="/login" />;
 };
 
@@ -22,7 +32,7 @@ export default function App() {
       {/* Trang đăng nhập */}
       <Route path="/login" element={<Login />} />
 
-      {/* Các route yêu cầu đăng nhập */}
+      {/* Các route cần đăng nhập */}
       <Route
         path="/"
         element={
@@ -31,24 +41,18 @@ export default function App() {
           </PrivateRoute>
         }
       >
-        {/* Dashboard */}
-        <Route path="dashboard" element={<Dashboard />} />
-
-        {/* Quản lý bài tuyển dụng */}
+        <Route index element={<Dashboard />} />
         <Route path="manage-recruitment" element={<ManageRecruitment />} />
-
-        {/* Chỉnh sửa bài */}
-        <Route path="edit/:id" element={<EditRecruitment />} />
-
-        {/* ✅ Quản lý người dùng */}
+        <Route path="edit-recruitment/:id" element={<EditRecruitment />} />
         <Route path="manage-users" element={<ManageUsers />} />
       </Route>
 
-      <Route path="/user-dashboard" element={<UserDashboard />} />
-      <Route path="/submit-recruitment" element={<SubmitRecruitment />} />
+      {/* Khu user riêng */}
+      <Route path="/user/dashboard" element={<UserDashboard />} />
+      <Route path="/user/submit" element={<SubmitRecruitment />} />
 
-      {/* Redirect mặc định */}
-      <Route path="*" element={<Navigate to="/dashboard" />} />
+      {/* Mặc định không khớp => chuyển về login */}
+      <Route path="*" element={<Navigate to="/login" />} />
     </Routes>
   );
 }

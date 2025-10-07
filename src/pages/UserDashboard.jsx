@@ -2,7 +2,8 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import UserHeader from "../components/UserHeader";
 import UserFooter from "../components/UserFooter";
-import "../../assests/user-style.css";
+import "../../assets/user-style.css";
+
 
 const UserDashboard = () => {
   const navigate = useNavigate();

@@ -9,7 +9,10 @@ export default function ManageUsers() {
 
   // ✅ Hàm load toàn bộ user
   const fetchUsers = async () => {
-    const { data, error } = await supabase.from("users").select("*").order("id", { ascending: true });
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .order("id", { ascending: true });
     if (error) console.error("Lỗi tải user:", error);
     else setUsers(data || []);
   };
@@ -18,7 +21,6 @@ export default function ManageUsers() {
   useEffect(() => {
     fetchUsers();
 
-    // Đăng ký realtime channel
     const channel = supabase
       .channel("users-changes")
       .on(
@@ -31,7 +33,6 @@ export default function ManageUsers() {
       )
       .subscribe();
 
-    // Cleanup khi rời trang để tránh leak
     return () => {
       supabase.removeChannel(channel);
     };
@@ -40,7 +41,9 @@ export default function ManageUsers() {
   // ✅ Thêm user mới
   const handleAddUser = async () => {
     if (!name || !email) return alert("Vui lòng nhập đầy đủ thông tin!");
-    const { error } = await supabase.from("users").insert([{ name, email, role }]);
+    const { error } = await supabase
+      .from("users")
+      .insert([{ name, email, role }]);
     if (error) {
       console.error("Lỗi thêm user:", error);
       alert("❌ Thêm user thất bại!");
@@ -49,6 +52,21 @@ export default function ManageUsers() {
       setName("");
       setEmail("");
       setRole("user");
+    }
+  };
+
+  // ✅ Xoá user
+  const handleDeleteUser = async (id) => {
+    const confirmDelete = window.confirm("Bạn có chắc muốn xoá user này không?");
+    if (!confirmDelete) return;
+
+    const { error } = await supabase.from("users").delete().eq("id", id);
+    if (error) {
+      console.error("Lỗi xoá user:", error);
+      alert("❌ Xoá user thất bại!");
+    } else {
+      alert("✅ Đã xoá user thành công!");
+      // Không cần fetch lại vì realtime sẽ tự cập nhật
     }
   };
 
@@ -84,6 +102,7 @@ export default function ManageUsers() {
             <th>Tên</th>
             <th>Email</th>
             <th>Vai trò</th>
+            <th>Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -93,11 +112,19 @@ export default function ManageUsers() {
                 <td>{u.name}</td>
                 <td>{u.email}</td>
                 <td>{u.role}</td>
+                <td>
+                  <button
+                    className="delete-btn"
+                    onClick={() => handleDeleteUser(u.id)}
+                  >
+                    Xoá
+                  </button>
+                </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="3" style={{ textAlign: "center" }}>
+              <td colSpan="4" style={{ textAlign: "center" }}>
                 Chưa có user nào
               </td>
             </tr>
@@ -145,6 +172,16 @@ export default function ManageUsers() {
           padding: 10px 12px;
           border-bottom: 1px solid #e5e5e5;
         }
+        .delete-btn {
+          background: #c0392b;
+          color: white;
+          border: none;
+          padding: 6px 12px;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: 0.3s;
+        }
+        .delete-btn:hover { background: #e74c3c; }
       `}</style>
     </div>
   );

@@ -485,6 +485,19 @@ main {
   to { opacity: 1; transform: translateY(0); }
 }
 
+.login-logo {
+  display: block;
+  margin: 0 auto 15px;
+  width: 120px;
+  height: auto;
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 
 /* ========== FOOTER ========== */
 .admin-footer {

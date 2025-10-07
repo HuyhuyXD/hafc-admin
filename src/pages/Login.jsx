@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import "../assets/admin-style.css";
 
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -50,10 +51,11 @@ export default function Login() {
     <div className="login-page">
       <div className="login-box">
         <img
-          src="../assets/logo.png" // Đặt đúng đường dẫn logo của HAFC ở đây
-          alt="HAFC Logo"
-          className="login-logo"
+            src="/logo.png"
+            alt="HAFC Logo"
+            style={{ width: "120px", display: "block", margin: "0 auto", background: "white" }}
         />
+
         <h2 className="login-title">Đăng nhập Admin</h2>
 
         <form onSubmit={handleLogin} className="login-form">

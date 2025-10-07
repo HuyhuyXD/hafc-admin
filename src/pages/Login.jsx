@@ -26,7 +26,7 @@ export default function Login() {
 
       const userEmail = data.user?.email;
 
-      // ✅ Kiểm tra quyền trong bảng admins
+      // ✅ Kiểm tra quyền admin trong bảng 'admins'
       const { data: adminData } = await supabase
         .from("admins")
         .select("role")
@@ -34,11 +34,11 @@ export default function Login() {
         .single();
 
       if (adminData?.role?.toLowerCase() === "admin") {
-        // ✅ Lưu session user vào localStorage để AuthContext nhận biết
+        // ✅ Lưu session user vào localStorage
         localStorage.setItem("userEmail", userEmail);
 
-        // ✅ Điều hướng sang Dashboard
-        navigate("/dashboard");
+        // ✅ Reload sang dashboard để AuthContext nhận user ngay
+        window.location.href = "/dashboard";
       } else {
         setErrorMsg("Tài khoản này không có quyền admin!");
       }

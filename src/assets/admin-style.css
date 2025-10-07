@@ -21,8 +21,6 @@ button {
 }
 
 /* ========== HEADER ========== */
-/* Header cố định trên cùng */
-/* Header cố định trên cùng */
 .admin-header {
   position: fixed;
   top: 0;
@@ -34,8 +32,8 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 70px; /* chuẩn chiều cao header */
-  padding: 0 24px;
+  height: 75px; 
+  padding: 0 28px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -43,17 +41,16 @@ button {
 .admin-body {
   display: flex;
   min-height: 100vh;
-  padding-top: 70px; /* khớp đúng chiều cao header */
+  padding-top: 75px; 
 }
-
 /* Sidebar */
 .admin-sidebar {
   width: 220px;
   background: #002244;
   padding: 20px 0;
-  min-height: calc(100vh - 70px);
+  min-height: calc(100vh - 75px);
   position: fixed;
-  top: 70px; /* khớp với header */
+  top: 75px; 
   left: 0;
   overflow-y: auto;
 }
@@ -98,18 +95,23 @@ button {
 .admin-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .admin-logo img {
-  width: 45px;
-  height: auto;
+  height: 48px; /* tăng rõ ràng hơn */
+  width: auto;
+  object-fit: contain;
+  display: block;
 }
 
 .admin-logo h1 {
   font-size: 18px;
   font-weight: 600;
   margin: 0;
+  line-height: 1.2;
+  color: #fff;
+  white-space: nowrap;
 }
 
 .admin-user {

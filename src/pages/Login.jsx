@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import "../assets/admin-style.css";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -9,6 +10,7 @@ export default function Login() {
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -16,7 +18,6 @@ export default function Login() {
     setErrorMsg("");
 
     try {
-      // ✅ Đăng nhập Supabase
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -26,7 +27,6 @@ export default function Login() {
 
       const userEmail = data.user?.email;
 
-      // ✅ Kiểm tra quyền admin trong bảng 'admins'
       const { data: adminData } = await supabase
         .from("admins")
         .select("role")
@@ -34,11 +34,8 @@ export default function Login() {
         .single();
 
       if (adminData?.role?.toLowerCase() === "admin") {
-        // ✅ Lưu session user vào localStorage
-        localStorage.setItem("userEmail", userEmail);
-
-        // ✅ Reload sang dashboard để AuthContext nhận user ngay
-        window.location.href = "/dashboard";
+        login(userEmail); // ✅ cập nhật context và localStorage
+        navigate("/dashboard"); // ✅ điều hướng sau khi login
       } else {
         setErrorMsg("Tài khoản này không có quyền admin!");
       }

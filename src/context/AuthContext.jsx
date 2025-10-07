@@ -4,27 +4,28 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // ✅ Thêm state loading để tránh lỗi reload trắng
+  const [loading, setLoading] = useState(true);
 
-  // Khi app load lần đầu
+  // ✅ Load user từ localStorage khi app khởi động
   useEffect(() => {
-    const storedUser = localStorage.getItem("userEmail");
-    if (storedUser) {
-      setUser(storedUser);
+    const savedEmail = localStorage.getItem("userEmail");
+    if (savedEmail) {
+      setUser({ email: savedEmail });
     }
-    setLoading(false); // Đọc xong user => kết thúc loading
+    setLoading(false);
   }, []);
 
-  // Hàm login
+  // ✅ Hàm đăng nhập: gọi từ Login.jsx
   const login = (email) => {
     localStorage.setItem("userEmail", email);
-    setUser(email);
+    setUser({ email });
   };
 
-  // Hàm logout
+  // ✅ Hàm đăng xuất
   const logout = () => {
     localStorage.removeItem("userEmail");
     setUser(null);
+    window.location.href = "/login"; // reload về login
   };
 
   return (

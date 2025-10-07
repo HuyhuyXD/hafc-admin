@@ -5,54 +5,65 @@ import Dashboard from "./pages/Dashboard";
 import ManageRecruitment from "./pages/ManageRecruitment";
 import EditRecruitment from "./pages/EditRecruitment";
 import ManageUsers from "./pages/ManageUsers";
-import { useAuth } from "./context/AuthContext";
 import AdminLayout from "./layouts/AdminLayout";
-import UserDashboard from "./pages/UserDashboard";
-import SubmitRecruitment from "./pages/SubmitRecruitment";
+import { useAuth } from "./context/AuthContext";
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
-  // ✅ Nếu đang khởi tạo context => hiển thị "Đang tải..."
-  if (loading) {
-    return (
-      <div style={{ textAlign: "center", paddingTop: "100px", fontSize: "18px" }}>
-        Đang tải...
-      </div>
-    );
-  }
+  if (loading) return <div>Đang tải...</div>;
+  if (!user) return <Navigate to="/login" replace />;
 
-  // ✅ Nếu có user => cho phép truy cập, ngược lại => về login
-  return user ? children : <Navigate to="/login" />;
+  return children;
 };
 
 export default function App() {
   return (
     <Routes>
-      {/* Trang đăng nhập */}
       <Route path="/login" element={<Login />} />
 
-      {/* Các route cần đăng nhập */}
       <Route
-        path="/"
+        path="/dashboard"
         element={
           <PrivateRoute>
-            <AdminLayout />
+            <AdminLayout>
+              <Dashboard />
+            </AdminLayout>
           </PrivateRoute>
         }
-      >
-        <Route index element={<Dashboard />} />
-        <Route path="manage-recruitment" element={<ManageRecruitment />} />
-        <Route path="edit-recruitment/:id" element={<EditRecruitment />} />
-        <Route path="manage-users" element={<ManageUsers />} />
-      </Route>
+      />
+      <Route
+        path="/manage-recruitment"
+        element={
+          <PrivateRoute>
+            <AdminLayout>
+              <ManageRecruitment />
+            </AdminLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/edit-recruitment/:id"
+        element={
+          <PrivateRoute>
+            <AdminLayout>
+              <EditRecruitment />
+            </AdminLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/manage-users"
+        element={
+          <PrivateRoute>
+            <AdminLayout>
+              <ManageUsers />
+            </AdminLayout>
+          </PrivateRoute>
+        }
+      />
 
-      {/* Khu user riêng */}
-      <Route path="/user/dashboard" element={<UserDashboard />} />
-      <Route path="/user/submit" element={<SubmitRecruitment />} />
-
-      {/* Mặc định không khớp => chuyển về login */}
-      <Route path="*" element={<Navigate to="/login" />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }

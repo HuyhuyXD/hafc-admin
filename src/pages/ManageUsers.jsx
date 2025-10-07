@@ -7,26 +7,30 @@ export default function ManageUsers() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("user");
 
-  // ✅ Lấy dữ liệu user từ Supabase
+  // ✅ Lấy danh sách user từ Supabase
   useEffect(() => {
     const fetchUsers = async () => {
       const { data, error } = await supabase.from("users").select("*");
-      if (error) console.error("Lỗi tải user:", error);
-      else setUsers(data);
+      console.log("Supabase return:", { data, error }); // log để test
+      if (error) {
+        console.error("Lỗi tải user:", error);
+      } else {
+        setUsers(data || []);
+      }
     };
     fetchUsers();
   }, []);
 
-  // ✅ Thêm user
+  // ✅ Thêm user mới
   const handleAddUser = async () => {
     if (!name || !email) return alert("Vui lòng nhập đầy đủ thông tin!");
     const { data, error } = await supabase.from("users").insert([{ name, email, role }]);
     if (error) {
       console.error("Lỗi thêm user:", error);
-      alert("Thêm user thất bại!");
+      alert("❌ Thêm user thất bại!");
     } else {
-      alert("Thêm user thành công!");
-      setUsers([...users, ...data]);
+      alert("✅ Thêm user thành công!");
+      setUsers([...users, ...(data || [])]);
       setName("");
       setEmail("");
       setRole("user");
@@ -37,9 +41,20 @@ export default function ManageUsers() {
     <div className="manage-users">
       <h2>👥 Quản lý User</h2>
 
+      {/* Form thêm user */}
       <div className="user-form">
-        <input type="text" placeholder="Tên hiển thị" value={name} onChange={(e) => setName(e.target.value)} />
-        <input type="email" placeholder="Email user" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input
+          type="text"
+          placeholder="Tên hiển thị"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <input
+          type="email"
+          placeholder="Email user"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
         <select value={role} onChange={(e) => setRole(e.target.value)}>
           <option value="user">User</option>
           <option value="admin">Admin</option>
@@ -47,28 +62,27 @@ export default function ManageUsers() {
         <button onClick={handleAddUser}>+ Thêm user</button>
       </div>
 
+      {/* Bảng danh sách user */}
       <table className="user-table">
         <thead>
           <tr>
             <th>Tên</th>
             <th>Email</th>
             <th>Vai trò</th>
-            <th>Ngày tạo</th>
           </tr>
         </thead>
         <tbody>
-          {users.length > 0 ? (
+          {users && users.length > 0 ? (
             users.map((u) => (
               <tr key={u.id}>
                 <td>{u.name}</td>
                 <td>{u.email}</td>
                 <td>{u.role}</td>
-                <td>—</td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="4" style={{ textAlign: "center" }}>
+              <td colSpan="3" style={{ textAlign: "center" }}>
                 Chưa có user nào
               </td>
             </tr>
@@ -76,7 +90,7 @@ export default function ManageUsers() {
         </tbody>
       </table>
 
-      {/* CSS inline (hoặc chuyển sang admin-style.css) */}
+      {/* CSS nội bộ */}
       <style>{`
         .user-form {
           display: flex;

@@ -22,6 +22,7 @@ button {
 
 /* ========== HEADER ========== */
 /* Header cố định trên cùng */
+/* Header cố định trên cùng */
 .admin-header {
   position: fixed;
   top: 0;
@@ -33,15 +34,16 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 24px;
+  height: 70px; /* chuẩn chiều cao header */
+  padding: 0 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Khi có header fixed, toàn bộ body phải có padding-top */
+/* Body layout tổng */
 .admin-body {
   display: flex;
   min-height: 100vh;
-  padding-top: 80px; /* tránh header đè nội dung */
+  padding-top: 70px; /* khớp đúng chiều cao header */
 }
 
 /* Sidebar */
@@ -49,13 +51,14 @@ button {
   width: 220px;
   background: #002244;
   padding: 20px 0;
-  min-height: calc(100vh - 80px);
+  min-height: calc(100vh - 70px);
   position: fixed;
-  top: 80px;
+  top: 70px; /* khớp với header */
   left: 0;
   overflow-y: auto;
 }
 
+/* Liên kết sidebar */
 .admin-sidebar ul {
   list-style: none;
   margin: 0;
@@ -63,7 +66,7 @@ button {
 }
 
 .admin-sidebar li {
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
 
 .admin-sidebar a {
@@ -71,13 +74,63 @@ button {
   color: #fff;
   text-decoration: none;
   padding: 10px 20px;
-  transition: 0.3s;
+  transition: all 0.25s ease;
+  border-left: 4px solid transparent;
 }
 
 .admin-sidebar a:hover,
 .admin-sidebar a.active {
   background: #0056b3;
   border-left: 4px solid #fff;
+  padding-left: 24px; /* nhẹ hiệu ứng dịch sang phải */
+}
+
+/* Nội dung chính */
+.admin-content {
+  flex: 1;
+  padding: 30px;
+  margin-left: 220px; /* đúng bằng sidebar */
+  background: #f6f8fa;
+  min-height: calc(100vh - 70px);
+}
+
+/* Logo + tên công ty */
+.admin-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-logo img {
+  width: 45px;
+  height: auto;
+}
+
+.admin-logo h1 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.admin-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logout-btn {
+  background: #001f3f;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.logout-btn:hover {
+  background: #0056b3;
+  transform: translateY(-1px);
 }
 
 /* Phần nội dung chính */

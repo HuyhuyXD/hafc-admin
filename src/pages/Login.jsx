@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import "../assets/admin-style.css";
 
-
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,7 +16,7 @@ export default function Login() {
     setErrorMsg("");
 
     try {
-      // Đăng nhập Supabase
+      // ✅ Đăng nhập Supabase
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -27,7 +26,7 @@ export default function Login() {
 
       const userEmail = data.user?.email;
 
-      // Kiểm tra quyền admin dựa theo email thật của user
+      // ✅ Kiểm tra quyền trong bảng admins
       const { data: adminData } = await supabase
         .from("admins")
         .select("role")
@@ -35,6 +34,10 @@ export default function Login() {
         .single();
 
       if (adminData?.role?.toLowerCase() === "admin") {
+        // ✅ Lưu session user vào localStorage để AuthContext nhận biết
+        localStorage.setItem("userEmail", userEmail);
+
+        // ✅ Điều hướng sang Dashboard
         navigate("/dashboard");
       } else {
         setErrorMsg("Tài khoản này không có quyền admin!");
@@ -51,9 +54,14 @@ export default function Login() {
     <div className="login-page">
       <div className="login-box">
         <img
-            src="/logo.png"
-            alt="HAFC Logo"
-            style={{ width: "120px", display: "block", margin: "0 auto", background: "white" }}
+          src="/logo.png"
+          alt="HAFC Logo"
+          style={{
+            width: "120px",
+            display: "block",
+            margin: "0 auto",
+            background: "white",
+          }}
         />
 
         <h2 className="login-title">Đăng nhập Admin</h2>

@@ -7,30 +7,45 @@ export default function ManageUsers() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("user");
 
-  // ✅ Lấy danh sách user từ Supabase
+  // ✅ Hàm load toàn bộ user
+  const fetchUsers = async () => {
+    const { data, error } = await supabase.from("users").select("*").order("id", { ascending: true });
+    if (error) console.error("Lỗi tải user:", error);
+    else setUsers(data || []);
+  };
+
+  // ✅ Lấy danh sách user lần đầu & lắng nghe realtime thay đổi
   useEffect(() => {
-    const fetchUsers = async () => {
-      const { data, error } = await supabase.from("users").select("*");
-      console.log("Supabase return:", { data, error }); // log để test
-      if (error) {
-        console.error("Lỗi tải user:", error);
-      } else {
-        setUsers(data || []);
-      }
-    };
     fetchUsers();
+
+    // Đăng ký realtime channel
+    const channel = supabase
+      .channel("users-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "users" },
+        (payload) => {
+          console.log("Realtime update:", payload);
+          fetchUsers(); // reload lại danh sách user mỗi khi có thay đổi
+        }
+      )
+      .subscribe();
+
+    // Cleanup khi rời trang để tránh leak
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // ✅ Thêm user mới
   const handleAddUser = async () => {
     if (!name || !email) return alert("Vui lòng nhập đầy đủ thông tin!");
-    const { data, error } = await supabase.from("users").insert([{ name, email, role }]);
+    const { error } = await supabase.from("users").insert([{ name, email, role }]);
     if (error) {
       console.error("Lỗi thêm user:", error);
       alert("❌ Thêm user thất bại!");
     } else {
       alert("✅ Thêm user thành công!");
-      setUsers([...users, ...(data || [])]);
       setName("");
       setEmail("");
       setRole("user");

@@ -21,38 +21,112 @@ button {
 }
 
 /* ========== HEADER ========== */
+/* Header cố định trên cùng */
 .admin-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
   background: #003366;
-  color: white;
-  padding: 14px 28px;
+  color: #fff;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  padding: 12px 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-.admin-header h2 {
+/* Khi có header fixed, toàn bộ body phải có padding-top */
+.admin-body {
+  display: flex;
+  min-height: 100vh;
+  padding-top: 80px; /* tránh header đè nội dung */
+}
+
+/* Sidebar */
+.admin-sidebar {
+  width: 220px;
+  background: #002244;
+  padding: 20px 0;
+  min-height: calc(100vh - 80px);
+  position: fixed;
+  top: 80px;
+  left: 0;
+  overflow-y: auto;
+}
+
+.admin-sidebar ul {
+  list-style: none;
   margin: 0;
-  font-size: 22px;
-  letter-spacing: 0.5px;
+  padding: 0;
 }
 
-.admin-header button {
-  background: #00264d;
-  border: none;
+.admin-sidebar li {
+  margin-bottom: 10px;
+}
+
+.admin-sidebar a {
+  display: block;
   color: #fff;
-  padding: 8px 15px;
-  border-radius: 6px;
-  font-size: 14px;
+  text-decoration: none;
+  padding: 10px 20px;
+  transition: 0.3s;
 }
 
-.admin-header button:hover {
-  background: #004c99;
-  transform: translateY(-1px);
+.admin-sidebar a:hover,
+.admin-sidebar a.active {
+  background: #0056b3;
+  border-left: 4px solid #fff;
 }
+
+/* Phần nội dung chính */
+.admin-content {
+  flex: 1;
+  padding: 30px;
+  margin-left: 220px; /* chừa chỗ cho sidebar cố định */
+  background: #f6f8fa;
+  min-height: calc(100vh - 80px);
+}
+
+/* Logo + tên công ty */
+.admin-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-logo img {
+  width: 45px;
+  height: auto;
+}
+
+.admin-logo h1 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.admin-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logout-btn {
+  background: #001f3f;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.logout-btn:hover {
+  background: #0056b3;
+}
+
 
 /* ========== SIDEBAR ========== */
 aside {

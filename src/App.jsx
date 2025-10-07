@@ -7,8 +7,9 @@ import EditRecruitment from "./pages/EditRecruitment";
 import ManageUsers from "./pages/ManageUsers"; // ✅ thêm import
 import { useAuth } from "./context/AuthContext";
 import AdminLayout from "./layouts/AdminLayout";
-import UserDashboard from "./user/pages/UserDashboard";
-import SubmitRecruitment from "./user/pages/SubmitRecruitment";
+import UserDashboard from "./pages/UserDashboard";
+import SubmitRecruitment from "./pages/SubmitRecruitment";
+
 
 const PrivateRoute = ({ children }) => {
   const { user } = useAuth();

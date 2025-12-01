@@ -4,7 +4,6 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ManageRecruitment from "./pages/ManageRecruitment";
 import EditRecruitment from "./pages/EditRecruitment";
-import ManageUsers from "./pages/ManageUsers";
 import AdminLayout from "./layouts/AdminLayout";
 import { useAuth } from "./context/AuthContext";
 
@@ -48,16 +47,6 @@ export default function App() {
           <PrivateRoute>
             <AdminLayout>
               <EditRecruitment />
-            </AdminLayout>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/manage-users"
-        element={
-          <PrivateRoute>
-            <AdminLayout>
-              <ManageUsers />
             </AdminLayout>
           </PrivateRoute>
         }

@@ -7,8 +7,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState({
-    pendingCount: 0,
-    approvedCount: 0,
+    postCount: 0,
     userCount: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -18,23 +17,15 @@ export default function Dashboard() {
     const fetchStats = async () => {
       setLoading(true);
 
-      const [{ count: pendingCount }, { count: approvedCount }, { count: userCount }] =
-        await Promise.all([
-          supabase
-            .from("pending_recruitments")
-            .select("*", { count: "exact", head: true })
-            .eq("status", "pending"),
-          supabase
-            .from("recruitment_posts")
-            .select("*", { count: "exact", head: true }),
-          supabase
-            .from("users")
-            .select("*", { count: "exact", head: true }),
-        ]);
+      const [{ count: postCount }, { count: userCount }] = await Promise.all([
+        supabase
+          .from("recruitment_posts")
+          .select("*", { count: "exact", head: true }),
+        supabase.from("users").select("*", { count: "exact", head: true }),
+      ]);
 
       setStats({
-        pendingCount: pendingCount || 0,
-        approvedCount: approvedCount || 0,
+        postCount: postCount || 0,
         userCount: userCount || 0,
       });
       setLoading(false);
@@ -49,17 +40,9 @@ export default function Dashboard() {
 
       {/* Thống kê tổng quan */}
       <div className="stat-grid">
-        <div className="stat-box pending">
-          <h4>Bài chờ duyệt</h4>
-          <p className="stat-count">{loading ? "..." : stats.pendingCount}</p>
-        </div>
         <div className="stat-box approved">
-          <h4>Bài đã duyệt</h4>
-          <p className="stat-count">{loading ? "..." : stats.approvedCount}</p>
-        </div>
-        <div className="stat-box users">
-          <h4>Người dùng nội bộ</h4>
-          <p className="stat-count">{loading ? "..." : stats.userCount}</p>
+          <h4>Bài đã đăng</h4>
+          <p className="stat-count">{loading ? "..." : stats.postCount}</p>
         </div>
       </div>
 
@@ -76,24 +59,12 @@ export default function Dashboard() {
         {/* Card Tuyển dụng */}
         <div className="card" style={{ flex: 1, minWidth: "250px" }}>
           <h3>Tuyển dụng</h3>
-          <p>Quản lý bài đăng tuyển dụng (duyệt & từ chối).</p>
+          <p>Đăng và quản lý bài tuyển dụng.</p>
           <button
             className="btn-main"
             onClick={() => navigate("/manage-recruitment")}
           >
             Quản lý bài đăng
-          </button>
-        </div>
-
-        {/* Card Quản lý user */}
-        <div className="card" style={{ flex: 1, minWidth: "250px" }}>
-          <h3>Quản lý người dùng</h3>
-          <p>Thêm, sửa, xoá tài khoản nhân viên nội bộ.</p>
-          <button
-            className="btn-main"
-            onClick={() => navigate("/manage-users")}
-          >
-            Quản lý User
           </button>
         </div>
       </div>
@@ -142,7 +113,6 @@ export default function Dashboard() {
           font-weight: bold;
         }
 
-        .pending { border-left: 6px solid #ff9800; }
         .approved { border-left: 6px solid #4caf50; }
         .users { border-left: 6px solid #2196f3; }
 

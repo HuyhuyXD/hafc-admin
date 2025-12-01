@@ -60,16 +60,6 @@ export default function AdminLayout({ children }) {
                   Tuyển dụng
                 </a>
               </li>
-              <li>
-                <a
-                  href="/manage-users"
-                  className={
-                    location.pathname === "/manage-users" ? "active" : ""
-                  }
-                >
-                  Quản lý User
-                </a>
-              </li>
             </ul>
           </nav>
         </aside>

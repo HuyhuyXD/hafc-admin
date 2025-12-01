@@ -2,106 +2,167 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 
 export default function ManageRecruitment() {
-  const [pendingPosts, setPendingPosts] = useState([]);
+  const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [image, setImage] = useState(null);
 
-  // ✅ Lấy danh sách bài chờ duyệt
+  // ✅ Lấy danh sách bài đăng
   useEffect(() => {
-    const fetchPendingPosts = async () => {
+    const fetchPosts = async () => {
       setLoading(true);
       const { data, error } = await supabase
-        .from("pending_recruitments")
+        .from("recruitment_posts")
         .select("*")
-        .eq("status", "pending")
         .order("id", { ascending: false });
 
-      if (error) console.error("Lỗi tải bài pending:", error);
-      else setPendingPosts(data);
-
+      if (error) console.error("Lỗi tải bài:", error);
+      else setPosts(data || []);
       setLoading(false);
     };
 
-    fetchPendingPosts();
+    fetchPosts();
+
+    // ✅ Lắng nghe realtime
+    const channel = supabase
+      .channel("recruitment-posts")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "recruitment_posts" },
+        () => fetchPosts()
+      )
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
   }, []);
 
-  // ✅ Duyệt bài đăng
-  const handleApprove = async (post) => {
-    const confirmApprove = window.confirm(`Duyệt bài: "${post.title}" ?`);
-    if (!confirmApprove) return;
-
-    // 1️⃣ Thêm bài vào bảng recruitment_posts
-    const { error: insertError } = await supabase.from("recruitment_posts").insert([
-      {
-        title: post.title,
-        content: post.content,
-        image_url: post.image_url,
-        author_email: post.author_email,
-      },
-    ]);
-    if (insertError) {
-      console.error("Lỗi khi thêm bài:", insertError);
-      alert("❌ Duyệt bài thất bại!");
+  // ✅ Đăng bài mới
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!title || !content) {
+      alert("Vui lòng nhập tiêu đề và nội dung!");
       return;
     }
 
-    // 2️⃣ Xoá bài khỏi bảng pending_recruitments
-    const { error: deleteError } = await supabase
-      .from("pending_recruitments")
-      .delete()
-      .eq("id", post.id);
+    let image_url = null;
 
-    if (deleteError) {
-      console.error("Lỗi khi xoá bài:", deleteError);
-      alert("⚠️ Đã thêm bài mới nhưng chưa xoá được bản gốc.");
+    if (image) {
+      // 🔹 Lấy phần mở rộng file (jpg, png...)
+      const fileExt = image.name.split(".").pop();
+      const fileName = `recruit-${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      console.log("🔹 Đang upload ảnh vào bucket: recruitment-images");
+
+      // 🔹 Upload ảnh lên đúng bucket (recruitment-images)
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("recruitment-images")
+        .upload(filePath, image, { upsert: true });
+
+      if (uploadError) {
+        console.error("❌ Lỗi upload ảnh:", uploadError);
+        alert(`Không thể tải ảnh lên!\n\nChi tiết: ${uploadError.message}`);
+        return;
+      }
+
+      console.log("✅ Upload thành công:", uploadData);
+
+      // 🔹 Lấy đường dẫn công khai
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("recruitment-images").getPublicUrl(filePath);
+
+      image_url = publicUrl;
+    }
+
+    // ✅ Thêm bài mới vào bảng recruitment_posts
+    const { error } = await supabase.from("recruitment_posts").insert([
+      {
+        title,
+        content,
+        image_url,
+      },
+    ]);
+
+    if (error) {
+      console.error("❌ Lỗi đăng bài:", error);
+      alert("Đăng bài thất bại!");
     } else {
-      setPendingPosts(pendingPosts.filter((p) => p.id !== post.id));
-      alert("✅ Đã duyệt bài thành công!");
+      alert("✅ Bài đăng thành công!");
+      setTitle("");
+      setContent("");
+      setImage(null);
     }
   };
 
-  // ❌ Từ chối bài đăng
-  const handleReject = async (post) => {
-    const confirmReject = window.confirm(`Từ chối bài: "${post.title}" ?`);
-    if (!confirmReject) return;
+  // ✅ Xoá bài viết
+  const handleDelete = async (postId) => {
+    const confirmDelete = window.confirm("Bạn có chắc muốn xoá bài này không?");
+    if (!confirmDelete) return;
 
     const { error } = await supabase
-      .from("pending_recruitments")
-      .update({ status: "rejected" })
-      .eq("id", post.id);
+      .from("recruitment_posts")
+      .delete()
+      .eq("id", postId);
 
     if (error) {
-      console.error("Lỗi từ chối bài:", error);
-      alert("❌ Không thể từ chối bài!");
+      console.error("Lỗi xoá bài:", error);
+      alert("❌ Xoá bài thất bại!");
     } else {
-      setPendingPosts(pendingPosts.filter((p) => p.id !== post.id));
-      alert("🚫 Bài đã bị từ chối.");
+      setPosts(posts.filter((p) => p.id !== postId));
+      alert("✅ Đã xoá bài thành công!");
     }
   };
 
   return (
     <div className="manage-recruitment">
-      <h2>📰 Duyệt bài tuyển dụng</h2>
+      <h2>📰 Đăng & quản lý bài tuyển dụng</h2>
 
+      {/* 🧾 Form đăng bài */}
+      <form className="recruit-form" onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Tiêu đề bài viết"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
+        <textarea
+          placeholder="Nội dung bài tuyển dụng"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          required
+        />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImage(e.target.files[0])}
+        />
+        <button type="submit" className="add-btn">
+          📤 Đăng bài
+        </button>
+      </form>
+
+      {/* 📋 Danh sách bài */}
       {loading ? (
-        <p>Đang tải danh sách bài chờ duyệt...</p>
-      ) : pendingPosts.length === 0 ? (
-        <p>Không có bài nào đang chờ duyệt ✅</p>
+        <p>Đang tải danh sách bài...</p>
+      ) : posts.length === 0 ? (
+        <p>Chưa có bài tuyển dụng nào</p>
       ) : (
         <table className="recruit-table">
           <thead>
             <tr>
               <th>Tiêu đề</th>
-              <th>Tác giả</th>
               <th>Nội dung</th>
               <th>Ảnh</th>
               <th>Hành động</th>
             </tr>
           </thead>
           <tbody>
-            {pendingPosts.map((post) => (
+            {posts.map((post) => (
               <tr key={post.id}>
                 <td>{post.title}</td>
-                <td>{post.author_email}</td>
                 <td style={{ maxWidth: "400px" }}>{post.content}</td>
                 <td>
                   {post.image_url ? (
@@ -120,11 +181,11 @@ export default function ManageRecruitment() {
                   )}
                 </td>
                 <td>
-                  <button className="approve-btn" onClick={() => handleApprove(post)}>
-                    ✅ Duyệt
-                  </button>
-                  <button className="reject-btn" onClick={() => handleReject(post)}>
-                    ❌ Từ chối
+                  <button
+                    className="delete-btn"
+                    onClick={() => handleDelete(post.id)}
+                  >
+                    🗑 Xoá
                   </button>
                 </td>
               </tr>
@@ -134,6 +195,34 @@ export default function ManageRecruitment() {
       )}
 
       <style>{`
+        .recruit-form {
+          background: #fff;
+          padding: 20px;
+          border-radius: 10px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          margin-bottom: 25px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .recruit-form input, .recruit-form textarea {
+          padding: 8px 10px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          font-size: 15px;
+          resize: vertical;
+        }
+        .add-btn {
+          background: #003366;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          padding: 10px 14px;
+          cursor: pointer;
+          transition: 0.3s;
+        }
+        .add-btn:hover { background: #0055aa; }
+
         .recruit-table {
           width: 100%;
           border-collapse: collapse;
@@ -142,41 +231,28 @@ export default function ManageRecruitment() {
           overflow: hidden;
           margin-top: 15px;
         }
-
         .recruit-table th {
           background: #003366;
           color: #fff;
           text-align: left;
           padding: 10px 12px;
         }
-
         .recruit-table td {
           padding: 10px 12px;
           border-bottom: 1px solid #eee;
           vertical-align: top;
         }
-
-        .approve-btn, .reject-btn {
+        .delete-btn {
+          background: #c0392b;
           border: none;
+          color: white;
           padding: 6px 10px;
           border-radius: 6px;
           cursor: pointer;
-          margin-right: 5px;
-          color: #fff;
           font-weight: 500;
-        }
-
-        .approve-btn {
-          background: #2e8b57;
           transition: 0.25s;
         }
-        .approve-btn:hover { background: #1f6d44; }
-
-        .reject-btn {
-          background: #b22222;
-          transition: 0.25s;
-        }
-        .reject-btn:hover { background: #8b0000; }
+        .delete-btn:hover { background: #e74c3c; }
       `}</style>
     </div>
   );
